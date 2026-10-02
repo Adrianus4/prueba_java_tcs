@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gestion-reserva
+  labels:
+    app: gestion-reserva
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gestion-reserva
+  template:
+    metadata:
+      labels:
+        app: gestion-reserva
+    spec:
+      containers:
+      - name: gestion-reserva
+        image: gestion-reserva:latest
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /q/health/live
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /q/health/ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gestion-reserva-service
+spec:
+  selector:
+    app: gestion-reserva
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
